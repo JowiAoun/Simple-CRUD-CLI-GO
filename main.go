@@ -1,7 +1,7 @@
 package main
 
 var (
-	choice          int
+	choice          int = -1
 	student_id      int
 	first_name      string
 	last_name       string

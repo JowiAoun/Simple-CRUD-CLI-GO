@@ -5,14 +5,16 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"os"
 )
 
 const (
-	DB_USER  = "abcd"
-	DB_PASS  = "abcd"
-	DB_NAME  = "abcd"
-	DB_PORT  = 5432
-	DB_TABLE = "abcd"
+	DB_USER   = "postgres"
+	DB_PASS   = "Wy5w0UY5l55G1Pf"
+	DB_PORT   = 5432
+	DB_SCHEMA = "q1"
+	DB_NAME   = "comp3005a3"
+	DB_TABLE  = "students"
 )
 
 var (
@@ -20,12 +22,54 @@ var (
 )
 
 func DBConnect() {
-	connStr := fmt.Sprintf("postgresql://%s:%s@localhost:%d/%s?sslmode=disable", DB_USER, DB_PASS, DB_PORT, DB_NAME)
-	conn, _ = sql.Open("postgres", connStr)
+	connStr := fmt.Sprintf("postgresql://%s:%s@localhost:%d/?sslmode=disable", DB_USER, DB_PASS, DB_PORT)
+	_conn, err := sql.Open("postgres", connStr)
+
+	if err = _conn.Ping(); err != nil {
+		PrintStr("Error: could not connect to database", err)
+		os.Exit(1)
+	}
+
+	conn = _conn
+
+	dbSetup()
 }
 
 func dbSetup() {
-	//TODO: First, check if db exists. If not, run this function
+	_, errDb := conn.Exec(StrFormat(`CREATE DATABASE %s`, DB_NAME))
+	if errDb != nil {
+		return
+	}
+
+	conn.Close()
+
+	connStr := fmt.Sprintf("postgresql://%s:%s@localhost:%d/%s?sslmode=disable", DB_USER, DB_PASS, DB_PORT, DB_NAME)
+	conn, _ = sql.Open("postgres", connStr)
+
+	_, errSchema := conn.Exec(StrFormat(`CREATE SCHEMA %s`, DB_SCHEMA))
+	if errSchema != nil {
+		PrintStr("\nError: could not create schema:\n", errSchema)
+	}
+
+	_, errTable := conn.Exec(StrFormat(`CREATE TABLE %s.%s (
+            student_id SERIAL PRIMARY KEY,
+            first_name VARCHAR(32) NOT NULL,
+            last_name VARCHAR(32) NOT NULL,
+            email VARCHAR(64) UNIQUE NOT NULL,
+            enrollment_date TIMESTAMP
+        		)`, DB_SCHEMA, DB_TABLE))
+	if errTable != nil {
+		PrintStr("\nError: could not create table:\n", errTable)
+	}
+
+	_, errInsert := conn.Exec(StrFormat(`INSERT INTO %s.%s
+            (first_name, last_name, email, enrollment_date) VALUES
+						('John', 'Doe', 'john.doe@example.com', '2023-09-01'),
+						('Jane', 'Smith', 'jane.smith@example.com', '2023-09-01'),
+						('Jim', 'Beam', 'jim.beam@example.com', '2023-09-02');`, DB_SCHEMA, DB_TABLE))
+	if errInsert != nil {
+		PrintStr("\nError: could not insert values into table:\n", errInsert)
+	}
 }
 
 func DBClose() {
@@ -36,7 +80,7 @@ func DBClose() {
 }
 
 func GetAllStudents(students *[]Student) bool {
-	rows, err := conn.QueryContext(context.Background(), fmt.Sprintf("SELECT * FROM %s", DB_TABLE))
+	rows, err := conn.QueryContext(context.Background(), StrFormat(`SELECT * FROM %s.%s`, DB_SCHEMA, DB_TABLE))
 	if err != nil {
 		PrintStr("Error: could not execute query.")
 		return false
