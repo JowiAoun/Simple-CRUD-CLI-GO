@@ -1,4 +1,5 @@
 - Resize format sizes of results
 - Remove time from date type binding
+- Containerize
 - Add README.md 
 - Record demo
