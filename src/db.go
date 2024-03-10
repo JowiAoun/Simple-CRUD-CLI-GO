@@ -37,7 +37,7 @@ func DBConnect() {
 	_conn, err := sql.Open("postgres", connStr)
 
 	if err = _conn.Ping(); err != nil {
-		PrintStr("Error: could not connect to database.\nPlease ensure that the constant values are valid.")
+		PrintStr("Error: could not connect to database.\nPlease ensure that the constant values are valid.\n", err.Error())
 		os.Exit(1)
 	}
 
@@ -59,7 +59,7 @@ func dbSetup() {
 	_, errDb := conn.Exec(StrFormat(`CREATE DATABASE %s`, DB_NAME))
 	if errDb != nil {
 		connStr := fmt.Sprintf(
-			"postgresql://%s:%s@localhost:%d/%s?sslmode=disable",
+			"postgresql://%s:%s@db:%d/%s?sslmode=disable",
 			DB_USER, DB_PASS, DB_PORT, DB_NAME)
 		conn, _ = sql.Open("postgres", connStr)
 
@@ -72,7 +72,7 @@ func dbSetup() {
 	}
 
 	connStr := fmt.Sprintf(
-		"postgresql://%s:%s@localhost:%d/%s?sslmode=disable",
+		"postgresql://%s:%s@db:%d/%s?sslmode=disable",
 		DB_USER, DB_PASS, DB_PORT, DB_NAME)
 	conn, _ = sql.Open("postgres", connStr)
 
