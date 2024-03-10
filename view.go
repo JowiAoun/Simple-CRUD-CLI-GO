@@ -1,7 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
+)
+
+var (
+	r = bufio.NewReader(os.Stdin)
 )
 
 func PrintMenu(choice *int) {
@@ -24,46 +31,51 @@ func PrintMenu(choice *int) {
 		*choice = -1
 		PrintMenu(choice)
 	}
-}
-
-func PrintOption1() {
-
+	fmt.Println()
 }
 
 func PrintOption2(first_name *string, last_name *string, email *string, enrollment_date *string) {
-	fmt.Println("Enter student's first name: ")
-	_, _ = fmt.Scanln(&first_name)
-	fmt.Println("Enter last name: ")
-	_, _ = fmt.Scanln(&last_name)
-	fmt.Println("Enter email: ")
-	_, _ = fmt.Scanln(&email)
-	fmt.Println("Enter first name: ")
-	_, _ = fmt.Scanln(&enrollment_date)
+	fmt.Printf("Enter student's first name: ")
+	*first_name, _ = r.ReadString('\n')
+
+	fmt.Printf("Enter last name: ")
+	*last_name, _ = r.ReadString('\n')
+
+	fmt.Printf("Enter email: ")
+	*email, _ = r.ReadString('\n')
+
+	fmt.Printf("Enter enrolment date (i.e.: 2024-09-03): ")
+	*enrollment_date, _ = r.ReadString('\n')
 }
 
-func PrintOption3(student_id *int, new_email *string) {
-	fmt.Println("Enter student's ID: ")
-	_, _ = fmt.Scanln(&student_id)
-	fmt.Println("Enter new email: ")
-	_, _ = fmt.Scanln(&new_email)
+func PrintOption3(student_id *string, new_email *string) {
+	fmt.Printf("Enter student's ID: ")
+	*student_id, _ = r.ReadString('\n')
+	fmt.Printf("Enter new email: ")
+	*new_email, _ = r.ReadString('\n')
 }
 
-func PrintOption4(student_id *int) {
-	fmt.Println("Enter student's ID: ")
-	_, _ = fmt.Scanln(&student_id)
+func PrintOption4(student_id *string) {
+	fmt.Printf("Enter student's ID: ")
+	*student_id, _ = r.ReadString('\n')
 }
 
 func PrintStudents(students *[]Student) {
-	fmt.Println("All students")
-	fmt.Println("------------")
+	fmt.Println("Students in the university")
+
+	fmt.Printf("%-9s %-16s %-16s %-32s %-10s\n", "ID", "FIRST NAME", "LAST NAME", "EMAIL", "ENROLLMENT DATE")
+	fmt.Println(strings.Repeat("-", 92))
 
 	for _, student := range *students {
-		fmt.Printf("%9d %16s %16s %32s %10s\n", student.Student_id, student.First_name, student.Last_name, student.Email, student.Enrolment)
+		fmt.Printf(
+			"%-9s %-16s %-16s %-32s %-10s\n",
+			student.Student_id, student.First_name, student.Last_name, student.Email, student.Enrollment,
+		)
 	}
 }
 
 func PrintStr(str string, args ...interface{}) {
-	fmt.Printf(str, args...)
+	fmt.Println(StrFormat(str, args))
 }
 
 func StrFormat(str string, args ...interface{}) string {
