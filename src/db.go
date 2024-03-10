@@ -6,6 +6,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"os"
+	"time"
 )
 
 const (
@@ -20,6 +21,14 @@ const (
 var (
 	conn *sql.DB
 )
+
+type Student struct {
+	Student_id string
+	First_name string
+	Last_name  string
+	Email      string
+	Enrollment string
+}
 
 func DBConnect() {
 	connStr := fmt.Sprintf(
@@ -106,6 +115,7 @@ func DBClose() {
 }
 
 func GetAllStudents(students *[]Student) bool {
+	*students = (*students)[:0] // clear array
 	rows, err := conn.QueryContext(context.Background(), StrFormat(`
         SELECT * FROM %s`,
 		DB_TABLE))
@@ -126,6 +136,12 @@ func GetAllStudents(students *[]Student) bool {
 			PrintStr("Error: could not scan row:\n", err)
 			return false
 		}
+		var enrollmentDate time.Time
+		if err := rows.Scan(&student.Student_id, &student.First_name, &student.Last_name, &student.Email, &enrollmentDate); err != nil {
+			PrintStr("Error: could not scan row:\n", err)
+			return false
+		}
+		student.Enrollment = enrollmentDate.Format("2006-01-02") // Format date without timezone information
 		*students = append(*students, student)
 	}
 	if err := rows.Err(); err != nil {

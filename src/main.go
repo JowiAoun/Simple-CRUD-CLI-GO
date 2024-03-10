@@ -11,14 +11,6 @@ var (
 	students        []Student
 )
 
-type Student struct {
-	Student_id string
-	First_name string
-	Last_name  string
-	Email      string
-	Enrollment string
-}
-
 func main() {
 	DBConnect()
 
