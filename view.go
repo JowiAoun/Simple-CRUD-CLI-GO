@@ -6,7 +6,7 @@ import (
 
 func PrintMenu(choice *int) {
 	fmt.Println("\nUniversity DB CLI")
-	fmt.Println("\n-----------------")
+	fmt.Println("-----------------")
 	fmt.Println("(1) Get all students")
 	fmt.Println("(2) Add student")
 	fmt.Println("(3) Update student email")
@@ -20,7 +20,7 @@ func PrintMenu(choice *int) {
 		*choice = -1
 		PrintMenu(choice)
 	} else if *choice < 0 || *choice > 4 {
-		fmt.Println("\nError: please enter one of the valid options (0 through 4)")
+		fmt.Println("\nError: please enter one of the valid options [0, 4]")
 		*choice = -1
 		PrintMenu(choice)
 	}
@@ -53,10 +53,6 @@ func PrintOption4(student_id *int) {
 	_, _ = fmt.Scanln(&student_id)
 }
 
-func PrintStr(str string) {
-	fmt.Println(str)
-}
-
 func PrintStudents(students *[]Student) {
 	fmt.Println("All students")
 	fmt.Println("------------")
@@ -64,4 +60,12 @@ func PrintStudents(students *[]Student) {
 	for _, student := range *students {
 		fmt.Printf("%9d %16s %16s %32s %10s\n", student.Student_id, student.First_name, student.Last_name, student.Email, student.Enrolment)
 	}
+}
+
+func PrintStr(str string, args ...interface{}) {
+	fmt.Printf(str, args...)
+}
+
+func StrFormat(str string, args ...interface{}) string {
+	return fmt.Sprintf(str, args...)
 }
