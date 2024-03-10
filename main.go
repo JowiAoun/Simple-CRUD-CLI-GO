@@ -1,8 +1,8 @@
 package main
 
 var (
-	choice          int = -1
-	student_id      int
+	choice          = -1
+	student_id      string
 	first_name      string
 	last_name       string
 	email           string
@@ -12,11 +12,11 @@ var (
 )
 
 type Student struct {
-	Student_id int
+	Student_id string
 	First_name string
 	Last_name  string
 	Email      string
-	Enrolment  string
+	Enrollment string
 }
 
 func main() {
@@ -31,18 +31,23 @@ func main() {
 			DBClose()
 			return
 		case 1:
-			PrintOption1()
 			GetAllStudents(&students)
 			PrintStudents(&students)
 		case 2:
 			PrintOption2(&first_name, &last_name, &email, &enrollment_date)
-			AddStudent(first_name, last_name, email, enrollment_date)
+			if AddStudent(first_name, last_name, email, enrollment_date) {
+				PrintStr("Student has been added.")
+			}
 		case 3:
 			PrintOption3(&student_id, &new_email)
-			UpdateStudentEmail(student_id, new_email)
+			if UpdateStudentEmail(student_id, new_email) {
+				PrintStr("Student email has been updated.")
+			}
 		case 4:
 			PrintOption4(&student_id)
-			DeleteStudent(student_id)
+			if DeleteStudent(student_id) {
+				PrintStr("Student has been deleted.")
+			}
 		}
 	}
 }
