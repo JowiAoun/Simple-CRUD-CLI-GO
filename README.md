@@ -15,7 +15,7 @@ efforts to reduce overhead before first usage. The next best step would be to co
 
 ## Requirements
 
-- [Go](https://go.dev/doc/install) 1.12
+- [Go](https://go.dev/doc/install) 1.22
 - [PostgreSQL](https://www.postgresql.org/download/) server
 
 ## Setup
