@@ -1,4 +1,0 @@
-- Add README.md 
-- Record demo
-- ADD COMMENTS!!!
-ADD VIDEO LINK TO README!!!
