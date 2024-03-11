@@ -10,8 +10,8 @@ import (
 )
 
 const (
+	DB_PASS   = "abcd" // REPLACE HERE
 	DB_USER   = "postgres"
-	DB_PASS   = "Wy5w0UY5l55G1Pf"
 	DB_PORT   = 5432
 	DB_SCHEMA = "q1"
 	DB_NAME   = "comp3005a3"
@@ -52,7 +52,7 @@ func dbSetup() {
 		SET search_path TO %s`,
 			DB_SCHEMA))
 		if errSetSchema != nil {
-			PrintStr("\nError: could not set schema search path:\n", errSetSchema)
+			PrintStrF("\nError: could not set schema search path:\n", errSetSchema)
 		}
 	}()
 
@@ -80,7 +80,7 @@ func dbSetup() {
 		CREATE SCHEMA %s`,
 		DB_SCHEMA))
 	if errSchema != nil {
-		PrintStr("\nError: could not create schema:\n", errSchema)
+		PrintStrF("\nError: could not create schema:\n", errSchema)
 	}
 
 	_, errTable := conn.Exec(StrFormat(`
@@ -92,7 +92,7 @@ func dbSetup() {
 		enrollment_date DATE)`,
 		DB_SCHEMA, DB_TABLE))
 	if errTable != nil {
-		PrintStr("\nError: could not create table:\n", errTable)
+		PrintStrF("\nError: could not create table:\n", errTable)
 	}
 
 	_, errInsert := conn.Exec(StrFormat(`
@@ -103,7 +103,7 @@ func dbSetup() {
 		('Jim', 'Beam', 'jim.beam@example.com', '2023-09-02');`,
 		DB_SCHEMA, DB_TABLE))
 	if errInsert != nil {
-		PrintStr("\nError: could not insert values into table:\n", errInsert)
+		PrintStrF("\nError: could not insert values into table:\n", errInsert)
 	}
 }
 
@@ -120,7 +120,7 @@ func GetAllStudents(students *[]Student) bool {
         SELECT * FROM %s`,
 		DB_TABLE))
 	if err != nil {
-		PrintStr("Error: could not execute query:\n", err)
+		PrintStrF("Error: could not execute query:\n", err)
 		return false
 	}
 	defer func(rows *sql.Rows) {
@@ -133,19 +133,19 @@ func GetAllStudents(students *[]Student) bool {
 	for rows.Next() {
 		var student Student
 		if err := rows.Scan(&student.Student_id, &student.First_name, &student.Last_name, &student.Email, &student.Enrollment); err != nil {
-			PrintStr("Error: could not scan row:\n", err)
+			PrintStrF("Error: could not scan row:\n", err)
 			return false
 		}
 		var enrollmentDate time.Time
 		if err := rows.Scan(&student.Student_id, &student.First_name, &student.Last_name, &student.Email, &enrollmentDate); err != nil {
-			PrintStr("Error: could not scan row:\n", err)
+			PrintStrF("Error: could not scan row:\n", err)
 			return false
 		}
 		student.Enrollment = enrollmentDate.Format("2006-01-02") // Format date without timezone information
 		*students = append(*students, student)
 	}
 	if err := rows.Err(); err != nil {
-		PrintStr("Error: rows iteration failed:\n", err)
+		PrintStrF("Error: rows iteration failed:\n", err)
 		return false
 	}
 
@@ -155,18 +155,18 @@ func GetAllStudents(students *[]Student) bool {
 func AddStudent(first_name string, last_name string, email string, enrollment_date string) bool {
 	tx, err := conn.Begin()
 	if err != nil {
-		PrintStr("Error: could not begin transaction:", err)
+		PrintStrF("Error: could not begin transaction:", err)
 		return false
 	}
 	defer func() {
 		if err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				PrintStr("Error: could not rollback transaction:", rollbackErr)
+				PrintStrF("Error: could not rollback transaction:", rollbackErr)
 			}
 			return
 		}
 		if commitErr := tx.Commit(); commitErr != nil {
-			PrintStr("Error: could not commit transaction:", commitErr)
+			PrintStrF("Error: could not commit transaction:", commitErr)
 		}
 	}()
 
@@ -176,7 +176,7 @@ func AddStudent(first_name string, last_name string, email string, enrollment_da
         ('%s', '%s', '%s', '%s');`,
 		DB_SCHEMA, DB_TABLE, first_name, last_name, email, enrollment_date))
 	if err != nil {
-		PrintStr("Error: could not execute query:", err)
+		PrintStrF("Error: could not execute query:", err)
 		return false
 	}
 
@@ -186,18 +186,18 @@ func AddStudent(first_name string, last_name string, email string, enrollment_da
 func UpdateStudentEmail(student_id string, new_email string) bool {
 	tx, err := conn.Begin()
 	if err != nil {
-		PrintStr("Error: could not begin transaction:", err)
+		PrintStrF("Error: could not begin transaction:", err)
 		return false
 	}
 	defer func() {
 		if err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				PrintStr("Error: could not rollback transaction:", rollbackErr)
+				PrintStrF("Error: could not rollback transaction:", rollbackErr)
 			}
 			return
 		}
 		if commitErr := tx.Commit(); commitErr != nil {
-			PrintStr("Error: could not commit transaction:", commitErr)
+			PrintStrF("Error: could not commit transaction:", commitErr)
 		}
 	}()
 
@@ -207,7 +207,7 @@ func UpdateStudentEmail(student_id string, new_email string) bool {
         WHERE student_id = %s;`,
 		DB_SCHEMA, DB_TABLE, new_email, student_id))
 	if err != nil {
-		PrintStr("Error: could not execute query:", err)
+		PrintStrF("Error: could not execute query:", err)
 		return false
 	}
 
@@ -217,18 +217,18 @@ func UpdateStudentEmail(student_id string, new_email string) bool {
 func DeleteStudent(student_id string) bool {
 	tx, err := conn.Begin()
 	if err != nil {
-		PrintStr("Error: could not begin transaction:", err)
+		PrintStrF("Error: could not begin transaction:", err)
 		return false
 	}
 	defer func() {
 		if err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				PrintStr("Error: could not rollback transaction:", rollbackErr)
+				PrintStrF("Error: could not rollback transaction:", rollbackErr)
 			}
 			return
 		}
 		if commitErr := tx.Commit(); commitErr != nil {
-			PrintStr("Error: could not commit transaction:", commitErr)
+			PrintStrF("Error: could not commit transaction:", commitErr)
 		}
 	}()
 
@@ -236,7 +236,7 @@ func DeleteStudent(student_id string) bool {
         DELETE FROM %s.%s
         WHERE student_id = %s;`, DB_SCHEMA, DB_TABLE, student_id))
 	if err != nil {
-		PrintStr("Error: could not execute query:", err)
+		PrintStrF("Error: could not execute query:", err)
 		return false
 	}
 

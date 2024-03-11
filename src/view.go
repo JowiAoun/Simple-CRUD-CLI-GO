@@ -82,8 +82,12 @@ func PrintStudents(students *[]Student) {
 	}
 }
 
-func PrintStr(str string, args ...interface{}) {
-	fmt.Println(StrFormat(str, args))
+func PrintStrF(str string, args ...interface{}) {
+	fmt.Println(StrFormat(str, args[0]))
+}
+
+func PrintStr(str string) {
+	fmt.Println(str)
 }
 
 func StrFormat(str string, args ...interface{}) string {
