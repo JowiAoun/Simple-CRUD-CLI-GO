@@ -1,3 +1,39 @@
+/*
+main.go:
+
+This file contains the main entry point for the University Database Command-Line Interface (CLI)
+application. It orchestrates the interaction between the user interface functions, database
+functions, and the main execution loop.
+
+Variables:
+- choice: Stores the user's menu choice.
+- student_id: Stores the ID of a student.
+- first_name: Stores the first name of a student.
+- last_name: Stores the last name of a student.
+- email: Stores the email address of a student.
+- enrollment_date: Stores the enrollment date of a student.
+- new_email: Stores the new email address for updating a student's email.
+- students: Slice to hold student records.
+
+Functions:
+- main: The main entry-point function of the CLI application. It connects to the database,
+displays the menu, and handles user input to perform various operations such as
+retrieving, adding, updating, or deleting student records. It also closes the
+database connection when the user chooses to exit.
+
+Dependencies:
+- DBConnect: Function to connect to the PostgreSQL database.
+- PrintMenu: Function to display the menu and prompt the user for input.
+- GetAllStudents: Function to retrieve all student records from the database.
+- PrintStudents: Function to display student records.
+- PrintOption2: Function to prompt the user for input to add a new student.
+- AddStudent: Function to add a new student record to the database.
+- PrintOption3: Function to prompt the user for input to update a student's email.
+- UpdateStudentEmail: Function to update a student's email in the database.
+- PrintOption4: Function to prompt the user for input to delete a student.
+- DeleteStudent: Function to delete a student record from the database.
+*/
+
 package main
 
 var (
@@ -11,6 +47,7 @@ var (
 	students        []Student
 )
 
+// main function is the entry point of the program where it connects to the database and presents a menu to the user.
 func main() {
 	DBConnect()
 

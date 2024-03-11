@@ -1,3 +1,43 @@
+/*
+db.go:
+
+This file contains functions for interacting with a PostgreSQL database in the context
+of a University Database Command-Line Interface (CLI). It includes functions for connecting
+to the database, setting up the necessary schema and tables, retrieving, adding, updating,
+and deleting student records.
+
+Constants:
+- DB_PASS: Password for the database user. (Replace with actual password)
+- DB_USER: Database username.
+- DB_PORT: Port number for the PostgreSQL database.
+- DB_SCHEMA: Database schema name.
+- DB_NAME: Database name.
+- DB_TABLE: Table name for storing student records.
+
+Variables:
+- conn: Global variable for the database connection.
+
+Structs:
+- Student: Represents a student entity with fields such as student ID, first name, last name, email, and enrollment date.
+
+Functions:
+- DBConnect: Connects to the PostgreSQL database using the provided credentials and sets up the necessary schema and tables if they don't exist.
+- dbSetup: Sets up the database schema and table. If they already exist, it connects to the existing database.
+- DBClose: Closes the database connection.
+- GetAllStudents: Retrieves all student records from the database and populates the provided slice with Student structs.
+- AddStudent: Adds a new student record to the database.
+- UpdateStudentEmail: Updates the email address of a student in the database.
+- DeleteStudent: Deletes a student record from the database based on the student ID.
+
+Dependencies:
+- context: Provides support for context management.
+- database/sql: Package for working with SQL databases.
+- fmt: Provides formatted I/O functions.
+- github.com/lib/pq: PostgreSQL driver for Go.
+- os: Provides a platform-independent interface to operating system functionality.
+- time: Package for handling time-related operations.
+*/
+
 package main
 
 import (
@@ -10,7 +50,7 @@ import (
 )
 
 const (
-	DB_PASS   = "abcd" // REPLACE HERE
+	DB_PASS   = "Wy5w0UY5l55G1Pf" // REPLACE HERE
 	DB_USER   = "postgres"
 	DB_PORT   = 5432
 	DB_SCHEMA = "q1"
@@ -22,6 +62,7 @@ var (
 	conn *sql.DB
 )
 
+// Student represents a student entity with fields such as student ID, first name, last name, email, and enrollment date.
 type Student struct {
 	Student_id string
 	First_name string
@@ -30,12 +71,15 @@ type Student struct {
 	Enrollment string
 }
 
+// DBConnect establishes a connection to the PostgreSQL database using the provided credentials and sets up the necessary schema and tables.
 func DBConnect() {
+	// Connection string for the PostgreSQL database
 	connStr := fmt.Sprintf(
 		"postgresql://%s:%s@localhost:%d/?sslmode=disable",
 		DB_USER, DB_PASS, DB_PORT)
 	_conn, err := sql.Open("postgres", connStr)
 
+	// Check if connection is successful
 	if err = _conn.Ping(); err != nil {
 		PrintStr("Error: could not connect to database.\nPlease ensure that the constant values are valid.")
 		os.Exit(1)
@@ -46,7 +90,9 @@ func DBConnect() {
 	dbSetup()
 }
 
+// dbSetup sets up the database schema and table. If they already exist, it connects to the existing database.
 func dbSetup() {
+	// Defer setting search path to the specified schema
 	defer func() {
 		_, errSetSchema := conn.Exec(StrFormat(`
 		SET search_path TO %s`,
@@ -56,6 +102,7 @@ func dbSetup() {
 		}
 	}()
 
+	// Create database if it does not exist
 	_, errDb := conn.Exec(StrFormat(`CREATE DATABASE %s`, DB_NAME))
 	if errDb != nil {
 		connStr := fmt.Sprintf(
@@ -66,16 +113,19 @@ func dbSetup() {
 		return
 	}
 
+	// Close current connection
 	err := conn.Close()
 	if err != nil {
 		os.Exit(1)
 	}
 
+	// Reconnect to the newly created database
 	connStr := fmt.Sprintf(
 		"postgresql://%s:%s@localhost:%d/%s?sslmode=disable",
 		DB_USER, DB_PASS, DB_PORT, DB_NAME)
 	conn, _ = sql.Open("postgres", connStr)
 
+	// Create schema if it does not exist
 	_, errSchema := conn.Exec(StrFormat(`
 		CREATE SCHEMA %s`,
 		DB_SCHEMA))
@@ -83,6 +133,7 @@ func dbSetup() {
 		PrintStrF("\nError: could not create schema:\n", errSchema)
 	}
 
+	// Create table if it does not exist
 	_, errTable := conn.Exec(StrFormat(`
 		CREATE TABLE %s.%s (
 		student_id SERIAL PRIMARY KEY,
@@ -95,6 +146,7 @@ func dbSetup() {
 		PrintStrF("\nError: could not create table:\n", errTable)
 	}
 
+	// Insert sample data into the table
 	_, errInsert := conn.Exec(StrFormat(`
 		INSERT INTO %s.%s
 		(first_name, last_name, email, enrollment_date) VALUES
@@ -107,6 +159,7 @@ func dbSetup() {
 	}
 }
 
+// DBClose closes the database connection.
 func DBClose() {
 	err := conn.Close()
 	if err != nil {
@@ -114,8 +167,9 @@ func DBClose() {
 	}
 }
 
+// GetAllStudents retrieves all student records from the database and populates the provided slice with Student structs.
 func GetAllStudents(students *[]Student) bool {
-	*students = (*students)[:0] // clear array
+	*students = (*students)[:0] // Clear array
 	rows, err := conn.QueryContext(context.Background(), StrFormat(`
         SELECT * FROM %s`,
 		DB_TABLE))
@@ -130,20 +184,25 @@ func GetAllStudents(students *[]Student) bool {
 		}
 	}(rows)
 
+	// Iterate over the rows and scan them into Student structs
 	for rows.Next() {
 		var student Student
+		// Scan the row into the student struct
 		if err := rows.Scan(&student.Student_id, &student.First_name, &student.Last_name, &student.Email, &student.Enrollment); err != nil {
 			PrintStrF("Error: could not scan row:\n", err)
 			return false
 		}
 		var enrollmentDate time.Time
+		// Format the enrollment date without timezone information
 		if err := rows.Scan(&student.Student_id, &student.First_name, &student.Last_name, &student.Email, &enrollmentDate); err != nil {
 			PrintStrF("Error: could not scan row:\n", err)
 			return false
 		}
-		student.Enrollment = enrollmentDate.Format("2006-01-02") // Format date without timezone information
+		student.Enrollment = enrollmentDate.Format("2006-01-02")
+		// Append the scanned student to the students slice
 		*students = append(*students, student)
 	}
+	// Check if any error occurred during row iteration
 	if err := rows.Err(); err != nil {
 		PrintStrF("Error: rows iteration failed:\n", err)
 		return false
@@ -152,6 +211,7 @@ func GetAllStudents(students *[]Student) bool {
 	return true
 }
 
+// AddStudent adds a new student record to the database.
 func AddStudent(first_name string, last_name string, email string, enrollment_date string) bool {
 	tx, err := conn.Begin()
 	if err != nil {
@@ -170,6 +230,7 @@ func AddStudent(first_name string, last_name string, email string, enrollment_da
 		}
 	}()
 
+	// Execute the SQL query to insert a new student record
 	_, err = tx.Exec(StrFormat(`
         INSERT INTO %s.%s
         (first_name, last_name, email, enrollment_date) VALUES
@@ -183,6 +244,7 @@ func AddStudent(first_name string, last_name string, email string, enrollment_da
 	return true
 }
 
+// UpdateStudentEmail updates the email of a student record in the database.
 func UpdateStudentEmail(student_id string, new_email string) bool {
 	tx, err := conn.Begin()
 	if err != nil {
@@ -201,6 +263,7 @@ func UpdateStudentEmail(student_id string, new_email string) bool {
 		}
 	}()
 
+	// Execute the SQL query to update the email of a student record
 	_, err = tx.Exec(StrFormat(`
         UPDATE %s.%s
         SET email = '%s'
@@ -214,6 +277,7 @@ func UpdateStudentEmail(student_id string, new_email string) bool {
 	return true
 }
 
+// DeleteStudent deletes a student record from the database.
 func DeleteStudent(student_id string) bool {
 	tx, err := conn.Begin()
 	if err != nil {
@@ -232,6 +296,7 @@ func DeleteStudent(student_id string) bool {
 		}
 	}()
 
+	// Execute the SQL query to delete a student record
 	_, err = tx.Exec(StrFormat(`
         DELETE FROM %s.%s
         WHERE student_id = %s;`, DB_SCHEMA, DB_TABLE, student_id))
