@@ -31,4 +31,4 @@ efforts to reduce overhead before first usage. The next best step would be to co
 After correctly setting up the application, make use of the command line interface to perform operations on the database provided.
 
 ## Demonstration Video:
- - A demonstration video about the setup & usage can be found [here]().
+ - A demonstration video about the setup & usage can be found [here](https://youtu.be/HkJxPtXjLao).
