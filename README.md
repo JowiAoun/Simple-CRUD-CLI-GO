@@ -15,15 +15,15 @@ efforts to reduce overhead before first usage. The next best step would be to co
 
 ## Requirements
 
-- [Go](https://go.dev/doc/install) 1.12
+- [Go](https://go.dev/doc/install) 1.22
 - [PostgreSQL](https://www.postgresql.org/download/) server
 
 ## Setup
-
-1. Make sure that PostgreSQL is installed and running
-2. In `/src/db.go`, replace the `DB_PASS` constant with the PostgreSQL server you would like to use, and the other constants if not default
-3. To compile & run, execute the following in the terminal: `go run src/main.go src/db.go src/view.go`
-4. Ensure that there are no errors to proceed. Existence of an error would most likely be about incorrect database connection details
+1. Clone this repository using `git clone https://github.com/JowiAoun/Simple-University-CRUD-DBMS-GO-CLI.git`
+2. Make sure that PostgreSQL is installed and running
+3. In `/src/db.go`, replace the `DB_PASS` constant with the PostgreSQL server you would like to use, and the other constants if not default
+4. To compile & run, execute the following in the terminal: `go run src/main.go src/db.go src/view.go`
+5. Ensure that there are no errors to proceed. Existence of an error would most likely be about incorrect database connection details
 
 
 ## Usage
